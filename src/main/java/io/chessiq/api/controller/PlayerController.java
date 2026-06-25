@@ -4,6 +4,7 @@ package io.chessiq.api.controller;
 import io.chessiq.api.dto.request.RegisterPlayerRequest;
 import io.chessiq.api.dto.response.PlayerResponse;
 import io.chessiq.application.service.PlayerService;
+import io.chessiq.application.service.SyncService;
 import io.chessiq.infrastructure.chesscom.ChessComClient;
 import io.chessiq.infrastructure.chesscom.dto.ChessComGame;
 import io.chessiq.infrastructure.chesscom.dto.ChessComProfile;
@@ -21,10 +22,13 @@ import java.util.List;
 public class PlayerController {
     private final PlayerService playerService;
     private final ChessComClient chessComClient;   // add this field
+    private final SyncService syncService;
 
-    public PlayerController(PlayerService playerService, ChessComClient chessComClient) {
+    public PlayerController(PlayerService playerService, ChessComClient chessComClient, SyncService syncService) {
         this.playerService = playerService;
-        this.chessComClient = chessComClient;       // add this line
+        this.chessComClient = chessComClient;
+        this.syncService = syncService;
+        // add this line
     }
 
 
@@ -46,5 +50,11 @@ public class PlayerController {
     public List<ChessComGame> testGames() {
         String mayArchive = "https://api.chess.com/pub/player/anuraj1212/games/2026/05";
         return chessComClient.fetchGamesForMonth(mayArchive);
+    }
+
+    @PostMapping("/{username}/sync")
+    public ResponseEntity<Void> syncPlayer(@PathVariable String username) {
+        syncService.syncPlayer(username);
+        return ResponseEntity.accepted().build();
     }
 }

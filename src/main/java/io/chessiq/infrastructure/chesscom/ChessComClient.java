@@ -1,6 +1,7 @@
 package io.chessiq.infrastructure.chesscom;
 
 import io.chessiq.config.ChessComProperties;
+import io.chessiq.infrastructure.chesscom.dto.ChessComArchives;
 import io.chessiq.infrastructure.chesscom.dto.ChessComGame;
 import io.chessiq.infrastructure.chesscom.dto.ChessComMonthGames;
 import io.chessiq.infrastructure.chesscom.dto.ChessComProfile;
@@ -42,5 +43,14 @@ public class ChessComClient {
                 .body(ChessComMonthGames.class);
 
         return response != null ? response.games() : List.of();
+    }
+
+    public List<String> fetchArchives(String username) {
+        ChessComArchives response = restClient.get()
+                .uri("/player/{username}/games/archives", username)
+                .retrieve()
+                .body(ChessComArchives.class);
+
+        return response != null ? response.archives() : List.of();
     }
 }
