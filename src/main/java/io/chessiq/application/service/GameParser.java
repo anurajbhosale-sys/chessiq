@@ -43,6 +43,7 @@ public class GameParser {
         entity.setOpeningName(extractOpeningName(game.eco()));
         entity.setPgn(game.pgn());
         entity.setTotalMoves(countMoves(game.pgn()));
+        entity.setEcoCode(extractEcoCode(game.pgn()));
 
         if (game.accuracies() != null) {
             Double myAcc = iAmWhite ? game.accuracies().white() : game.accuracies().black();
@@ -97,5 +98,14 @@ public class GameParser {
                  "50move", "timevsinsufficient" -> "DRAW";
             default -> "UNKNOWN";
         };
+    }
+
+    private static final java.util.regex.Pattern ECO_PATTERN =
+            java.util.regex.Pattern.compile("\\[ECO \"([^\"]+)\"\\]");
+
+    private String extractEcoCode(String pgn) {
+        if (pgn == null) return null;
+        java.util.regex.Matcher matcher = ECO_PATTERN.matcher(pgn);
+        return matcher.find() ? matcher.group(1) : null;
     }
 }

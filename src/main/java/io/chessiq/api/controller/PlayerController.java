@@ -39,18 +39,7 @@ public class PlayerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // TEMPORARY — for testing the Chess.com client. Delete after verifying.
-    @GetMapping("/test-fetch/{username}")
-    public ChessComProfile testFetch(@PathVariable String username) {
-        return chessComClient.fetchProfile(username);
-    }
-
-    // TEMPORARY — testing game fetch. Delete after verifying.
-    @GetMapping("/test-games")
-    public List<ChessComGame> testGames() {
-        String mayArchive = "https://api.chess.com/pub/player/anuraj1212/games/2026/05";
-        return chessComClient.fetchGamesForMonth(mayArchive);
-    }
+   
 
     @PostMapping("/{username}/sync")
     public ResponseEntity<Void> syncPlayer(@PathVariable String username) {

@@ -6,6 +6,7 @@ import io.chessiq.infrastructure.persistence.entity.PlayerEntity;
 import io.chessiq.infrastructure.persistence.repository.PlayerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class SyncService {
         this.gameImportService = gameImportService;
     }
 
+    @Async
     public void syncPlayer(String username) {
         PlayerEntity player = playerRepository.findByChessComUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Player not registered: " + username));
