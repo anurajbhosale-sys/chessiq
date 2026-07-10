@@ -19,13 +19,16 @@ public class GameImportService {
     private final GameRepository gameRepository;
     private final SyncJobRepository syncJobRepository;
     private final GameParser gameParser;
+    private final AggregationService aggregationService;
 
     public GameImportService(GameRepository gameRepository,
                              SyncJobRepository syncJobRepository,
-                             GameParser gameParser) {
+                             GameParser gameParser,
+                             AggregationService aggregationService) {
         this.gameRepository = gameRepository;
         this.syncJobRepository = syncJobRepository;
         this.gameParser = gameParser;
+        this.aggregationService = aggregationService;
     }
 
     @Transactional
@@ -49,6 +52,10 @@ public class GameImportService {
         }
 
         gameRepository.saveAll(toSave);
+
+        for (GameEntity entity : toSave) {
+            aggregationService.upsertOpeningStats(entity);
+        }
 
         job.setStatus("DONE");
         job.setGamesImported(toSave.size());

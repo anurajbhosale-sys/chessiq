@@ -35,4 +35,10 @@ public class PlayerController {
         syncService.syncPlayer(username);
         return ResponseEntity.accepted().build();
     }
+
+    @PostMapping("/{username}/rebuild-stats")
+    public ResponseEntity<Void> rebuildStats(@PathVariable String username) {
+        playerService.rebuildStats(username);
+        return ResponseEntity.ok().build();
+    }
 }

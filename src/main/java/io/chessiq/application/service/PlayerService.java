@@ -11,10 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class PlayerService {
 
-    private final PlayerRepository playerRepository;
 
-    public PlayerService(PlayerRepository playerRepository) {
+
+    private final PlayerRepository playerRepository;
+    private final AggregationService aggregationService;
+
+    public PlayerService(PlayerRepository playerRepository, AggregationService aggregationService) {
         this.playerRepository = playerRepository;
+        this.aggregationService = aggregationService;
     }
 
     @Transactional
@@ -35,6 +39,14 @@ public class PlayerService {
 
         // Step 5 + 6 — convert entity to response DTO and return
         return toResponse(saved);
+    }
+
+
+    public void rebuildStats(String username) {
+        PlayerEntity player = playerRepository.findByChessComUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Player not registered: " + username));
+
+        aggregationService.rebuildOpeningStats(player.getId());
     }
 
     private PlayerResponse toResponse(PlayerEntity entity) {
