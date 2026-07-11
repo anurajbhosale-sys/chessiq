@@ -54,3 +54,6 @@ chessiq:
   jwt:
     secret: ${JWT_SECRET:change-this-to-a-256-bit-secret-in-production}
     expiration-ms: 86400000
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY}
