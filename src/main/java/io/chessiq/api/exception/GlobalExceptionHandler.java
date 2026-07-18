@@ -1,6 +1,7 @@
 package io.chessiq.api.exception;
 
 import io.chessiq.api.dto.response.ApiErrorResponse;
+import io.chessiq.domain.exception.EmailAlreadyExistsException;
 import io.chessiq.domain.exception.PlayerAlreadyExistsException;
 import io.chessiq.infrastructure.chesscom.exception.PlayerNotFoundOnChessComException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,5 +40,18 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex, HttpServletRequest request){
+        ApiErrorResponse body = new ApiErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "PLAYER ALREADY EXISTS",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 }
