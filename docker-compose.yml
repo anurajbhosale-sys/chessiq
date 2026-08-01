@@ -1,0 +1,35 @@
+services:
+  # BOX 1: the database
+  postgres:
+    image: postgres:18.3            # blueprint pulled ready-made, no Dockerfile needed
+    environment:
+      POSTGRES_DB: chessiq
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}   # read from your shell / .env, not hard-coded
+    ports:
+      - "5433:5432"                 # expose DB to your Mac (for psql) — optional
+    volumes:
+      - pgdata:/var/lib/postgresql   # so data survives box restarts
+    healthcheck:                    # "is the DB actually ready?" — see below
+      test: ["CMD-SHELL", "pg_isready -U postgres -d chessiq"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # BOX 2: the app
+  app:
+    build: .                        # build THIS box from the Dockerfile here
+    ports:
+      - "8080:8080"
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      # the important line — see "the introduction" below:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chessiq
+    depends_on:
+      postgres:
+        condition: service_healthy  # don't start app until DB passes its healthcheck
+
+volumes:
+  pgdata:
