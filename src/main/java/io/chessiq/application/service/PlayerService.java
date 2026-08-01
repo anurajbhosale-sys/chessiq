@@ -2,11 +2,15 @@ package io.chessiq.application.service;
 
 import io.chessiq.api.dto.request.RegisterPlayerRequest;
 import io.chessiq.api.dto.response.PlayerResponse;
+import io.chessiq.domain.exception.PlayerAccessDeniedException;
 import io.chessiq.domain.exception.PlayerAlreadyExistsException;
+import io.chessiq.domain.exception.PlayerNotFoundException;
 import io.chessiq.infrastructure.persistence.entity.PlayerEntity;
 import io.chessiq.infrastructure.persistence.repository.PlayerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 public class PlayerService {
@@ -22,31 +26,32 @@ public class PlayerService {
     }
 
     @Transactional
-    public PlayerResponse registerPlayer(RegisterPlayerRequest request) {
+    public PlayerResponse registerPlayer(RegisterPlayerRequest request, UUID currentUserId) {
         String username = request.chessComUsername();
 
-        // Step 1 + 2 — your guard: reject if already exists
         if (playerRepository.existsByChessComUsername(username)) {
             throw new PlayerAlreadyExistsException(username);
         }
 
-        // Step 3 — build the entity from the request
         PlayerEntity player = new PlayerEntity();
         player.setChessComUsername(username);
+        player.setUserId(currentUserId);   // now refers to the parameter
 
-        // Step 4 — save it
         PlayerEntity saved = playerRepository.save(player);
-
-        // Step 5 + 6 — convert entity to response DTO and return
         return toResponse(saved);
     }
 
 
-    public void rebuildStats(String username) {
-        PlayerEntity player = playerRepository.findByChessComUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Player not registered: " + username));
-
+    public void rebuildStats(String username, UUID currentUserId) {
+        PlayerEntity player = findOwnedPlayer(username, currentUserId);
         aggregationService.rebuildOpeningStats(player.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public PlayerResponse getPlayer(String username) {
+        PlayerEntity player = playerRepository.findByChessComUsername(username)
+                .orElseThrow(() -> new PlayerNotFoundException(username));
+        return toResponse(player);
     }
 
     private PlayerResponse toResponse(PlayerEntity entity) {
@@ -63,5 +68,14 @@ public class PlayerService {
                 entity.getRapidDraws(),
                 entity.getTacticsRatingBest()
         );
+    }
+
+    public PlayerEntity findOwnedPlayer(String username, UUID currentUserId) {
+        PlayerEntity player = playerRepository.findByChessComUsername(username)
+                .orElseThrow(() -> new PlayerNotFoundException(username));
+        if (!player.getUserId().equals(currentUserId)) {
+            throw new PlayerAccessDeniedException(username);
+        }
+        return player;
     }
 }

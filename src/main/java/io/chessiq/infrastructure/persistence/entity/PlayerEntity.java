@@ -16,6 +16,9 @@ public class PlayerEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
+    // PlayerEntity.java — alongside your other columns
+    @Column(name = "user_id")
+    private UUID userId;
 
     @Column(name = "chess_com_username", nullable = false, unique = true, length = 100)
     private String chessComUsername;
