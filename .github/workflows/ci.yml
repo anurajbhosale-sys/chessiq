@@ -31,5 +31,5 @@ jobs:
       # STEP 3: build and package the jar. -B = batch mode (no progress
       # spam in logs). Tests skipped for now (Level 1); we turn them on
       # once Testcontainers exists.
-      - name: Build with Maven
-        run: ./mvnw clean package -DskipTests -B
+      - name: Build and test with Maven
+        run: ./mvnw clean verify -B
