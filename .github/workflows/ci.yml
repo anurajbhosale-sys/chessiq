@@ -1,0 +1,35 @@
+name: CI
+
+# TRIGGER: run on every push to any branch, and on PRs targeting main.
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    # The fresh empty warehouse: a clean Ubuntu Linux VM, provisioned per run.
+    runs-on: ubuntu-latest
+
+    steps:
+      # STEP 1: check out your repo's code into the VM.
+      # Without this the VM is empty — it has no idea what your project is.
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # STEP 2: install JDK 21. This is the robot's version of tonight's
+      # whole Java fight — declared in one block, done right every time,
+      # on a machine that started with no Java at all.
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven          # cache ~/.m2 between runs so deps don't
+          # re-download every time — faster builds.
+
+      # STEP 3: build and package the jar. -B = batch mode (no progress
+      # spam in logs). Tests skipped for now (Level 1); we turn them on
+      # once Testcontainers exists.
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests -B
